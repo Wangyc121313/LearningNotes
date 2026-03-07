@@ -42,15 +42,6 @@
 
 ---
 
-## 🔭 Optics 子模块
-
-| 文件 | 内容 |
-|------|------|
-| [notes.ipynb](./Optics/notes.ipynb) | 光学原理笔记 |
-| [Ansys Lumerical Learning Notes.ipynb](./Optics/Simulation/Ansys%20Lumerical%20Learning%20Notes.ipynb) | Lumerical FDTD 仿真学习 |
-
----
-
 ## 🛠️ 环境
 
 - 笔记格式：[Jupyter Notebook](https://jupyter.org/) `.ipynb`
