@@ -8,8 +8,8 @@
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 🔵 [C](./C/) | C 语言基础：指针、内存、数据结构 | Jupyter Notebook |
-| 🔷 [C++](./C++/) | C++ 语言进阶 | - |
+| 🔵 [C](./C/C.ipynb) | C 语言基础：指针、内存、数据结构 | Jupyter Notebook |
+| 🔷 [C++](./C/Cpp.ipynb) | C++ 语言进阶 | Jupyter Notebook |
 | 🐍 [Python](./Python/) | 语法、NumPy、Matplotlib、Pandas、PyTorch、FastAPI、Scikit-learn | Jupyter Notebook |
 | 🐚 [Shell](./Shell/) | Shell 脚本与命令行 | Jupyter Notebook |
 | 🐧 [Linux](./Linux/) | Linux 系统使用与命令 | Jupyter Notebook |
