@@ -13,7 +13,7 @@
 | 🐍 [Python](./Python/) | 语法、NumPy、Matplotlib、Pandas、PyTorch、FastAPI、Scikit-learn | Jupyter Notebook |
 | 🐚 [Shell](./Shell/) | Shell 脚本与命令行 | Jupyter Notebook |
 | 🐧 [Linux](./Linux/) | Linux 系统使用与命令 | Jupyter Notebook |
-| 🐳 [Docker](./Docker/) | 容器化与镜像管理 | - |
+| 🐳 [Docker](./Docker/) | 容器化与镜像管理 | Jupyter Notebook |
 | 🌿 [Git](./Git/) | 版本控制与协作工作流 | Jupyter Notebook |
 | 🧪 [Conda](./Conda/) | Python 环境与包管理 | Jupyter Notebook |
 | 🤖 [Machine Learning](./Machine%20Learning/) | 机器学习、深度学习、强化学习 | Jupyter Notebook |
