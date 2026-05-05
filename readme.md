@@ -17,7 +17,7 @@
 ### 🛠️ 系统与工具
 
 | 分类 | 内容 |
-|------|------|------|
+|------|------|
 | 🐧 [Linux](./Linux/notes.md) | Linux 系统使用与命令 |
 | 🐚 [Shell](./Shell/notes.md) | Shell 脚本与命令行 |
 | 🏗️ [CMake](./CMake/notes.md) | 跨平台构建系统 |
@@ -30,7 +30,7 @@
 > ML、DL、RL 是 AI 的三大学习范式，各有侧重。
 
 | 分类 | 内容 |
-|------|------|------|
+|------|------|
 | 📊 [ML](./ML/notes.md) | 经典机器学习（SVM、决策树、聚类、降维等） |
 | 🧠 [DL](./DL/notes.md) | 深度学习基础（CNN、RNN、Transformer 等） |
 | 🎮 [RL](./RL/notes.md) | 强化学习（Q-Learning、PPO、SAC 等） |
@@ -40,14 +40,14 @@
 > LLM → VLM → VLA，能力逐步扩展：纯语言 → 视觉语言 → 视觉语言动作。
 
 | 分类 | 内容 |
-|------|------|------|
+|------|------|
 | 💬 [LLM](./LLM/notes.md) | 大语言模型（GPT、LLaMA、Qwen 等） |
 | 👁️ [VLM](./VLM/notes.md) | 视觉语言模型（CLIP、LLaVA、InternVL、Qwen-VL 等） |
 | 🦾 [VLA](./VLA/notes.md) | 视觉语言动作模型（RT-2、OpenVLA、π0 等） |
 ### ⚡ 推理与部署
 
 | 分类 | 内容 |
-|------|------|------|
+|------|------|
 | 🔥 [CUDA](./Cuda/notes.md) | NVIDIA CUDA 并行计算 |
 | 📦 [ONNX](./ONNX/notes.md) | 模型交换格式与跨框架推理 |
 | 🚀 [TensorRT](./TensorRT/notes.md) | NVIDIA 高性能推理引擎 |
