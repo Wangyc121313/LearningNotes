@@ -10,20 +10,20 @@
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 🔵 [C](./C/C.ipynb) | C 语言基础：指针、内存、数据结构 | Jupyter Notebook |
-| 🔷 [C++](./Cpp/Cpp.ipynb) | C++ 语言进阶 | Jupyter Notebook |
-| 🐍 [Python](./Python/) | 语法、NumPy、Matplotlib、Pandas、PyTorch、TensorFlow、FastAPI、Scikit-learn | Jupyter Notebook |
+| 🔵 [C](./C/notes.md) | C 语言基础：指针、内存、数据结构 | Markdown / Jupyter Notebook |
+| 🔷 [C++](./Cpp/notes.md) | C++ 语言进阶 | Markdown / Jupyter Notebook |
+| 🐍 [Python](./Python/notes.md) | 语法、NumPy、Matplotlib、Pandas、PyTorch、TensorFlow、FastAPI、Scikit-learn | Markdown / Jupyter Notebook |
 
 ### 🛠️ 系统与工具
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 🐧 [Linux](./Linux/notes.ipynb) | Linux 系统使用与命令 | Jupyter Notebook |
-| 🐚 [Shell](./Shell/notes.ipynb) | Shell 脚本与命令行 | Jupyter Notebook |
-| 🏗️ [CMake](./CMake/CMake.ipynb) | 跨平台构建系统 | Jupyter Notebook |
-| 🧪 [Conda](./Conda/notes.ipynb) | Python 环境与包管理 | Jupyter Notebook |
-| 🐳 [Docker](./Docker/notes.ipynb) | 容器化与镜像管理 | Jupyter Notebook |
-| 🌿 [Git](./Git/notes.ipynb) | 版本控制与协作工作流 | Jupyter Notebook |
+| 🐧 [Linux](./Linux/notes.md) | Linux 系统使用与命令 | Markdown / Jupyter Notebook |
+| 🐚 [Shell](./Shell/notes.md) | Shell 脚本与命令行 | Markdown / Jupyter Notebook |
+| 🏗️ [CMake](./CMake/notes.md) | 跨平台构建系统 | Markdown / Jupyter Notebook |
+| 🧪 [Conda](./Conda/notes.md) | Python 环境与包管理 | Markdown / Jupyter Notebook |
+| 🐳 [Docker](./Docker/notes.md) | 容器化与镜像管理 | Markdown / Jupyter Notebook |
+| 🌿 [Git](./Git/notes.md) | 版本控制与协作工作流 | Markdown / Jupyter Notebook |
 
 ### 🤖 AI / 机器学习基础
 
@@ -31,9 +31,9 @@
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 📊 [ML](./ML/notes.ipynb) | 经典机器学习（SVM、决策树、聚类、降维等） | Jupyter Notebook |
-| 🧠 [DL](./DL/notes.ipynb) | 深度学习基础（CNN、RNN、Transformer 等） | Jupyter Notebook |
-| 🎮 [RL](./RL/notes.ipynb) | 强化学习（Q-Learning、PPO、SAC 等） | Jupyter Notebook |
+| 📊 [ML](./ML/notes.md) | 经典机器学习（SVM、决策树、聚类、降维等） | Markdown / Jupyter Notebook |
+| 🧠 [DL](./DL/notes.md) | 深度学习基础（CNN、RNN、Transformer 等） | Markdown / Jupyter Notebook |
+| 🎮 [RL](./RL/notes.md) | 强化学习（Q-Learning、PPO、SAC 等） | Markdown / Jupyter Notebook |
 
 ### 🌐 大模型 / 多模态
 
@@ -41,24 +41,24 @@
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 💬 [LLM](./LLM/notes.ipynb) | 大语言模型（GPT、LLaMA、Qwen 等） | Jupyter Notebook |
-| 👁️ [VLM](./VLM/notes.ipynb) | 视觉语言模型（CLIP、LLaVA、InternVL、Qwen-VL 等） | Jupyter Notebook |
-| 🦾 [VLA](./VLA/notes.ipynb) | 视觉语言动作模型（RT-2、OpenVLA、π0 等） | Jupyter Notebook |
+| 💬 [LLM](./LLM/notes.md) | 大语言模型（GPT、LLaMA、Qwen 等） | Markdown / Jupyter Notebook |
+| 👁️ [VLM](./VLM/notes.md) | 视觉语言模型（CLIP、LLaVA、InternVL、Qwen-VL 等） | Markdown / Jupyter Notebook |
+| 🦾 [VLA](./VLA/notes.md) | 视觉语言动作模型（RT-2、OpenVLA、π0 等） | Markdown / Jupyter Notebook |
 
 ### ⚡ 推理与部署
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 🔥 [CUDA](./Cuda/notes.ipynb) | NVIDIA CUDA 并行计算 | Jupyter Notebook |
-| 📦 [ONNX](./ONNX/notes.ipynb) | 模型交换格式与跨框架推理 | Jupyter Notebook |
-| 🚀 [TensorRT](./TensorRT/notes.ipynb) | NVIDIA 高性能推理引擎 | Jupyter Notebook |
-| ⚡ [vLLM](./vLLM/notes.ipynb) | 大语言模型高效推理框架（PagedAttention） | Jupyter Notebook |
+| 🔥 [CUDA](./Cuda/notes.md) | NVIDIA CUDA 并行计算 | Markdown / Jupyter Notebook |
+| 📦 [ONNX](./ONNX/notes.md) | 模型交换格式与跨框架推理 | Markdown / Jupyter Notebook |
+| 🚀 [TensorRT](./TensorRT/notes.md) | NVIDIA 高性能推理引擎 | Markdown / Jupyter Notebook |
+| ⚡ [vLLM](./vLLM/notes.md) | 大语言模型高效推理框架（PagedAttention） | Markdown / Jupyter Notebook |
 
 ### 🤖 机器人
 
 | 分类 | 内容 | 格式 |
 |------|------|------|
-| 🤖 [ROS2](./ROS2/notes.ipynb) | 机器人操作系统 ROS 2 | Jupyter Notebook |
+| 🤖 [ROS2](./ROS2/notes.md) | 机器人操作系统 ROS 2 | Markdown / Jupyter Notebook |
 
 ---
 
@@ -66,12 +66,12 @@
 
 | 文件 | 内容 |
 |------|------|
-| [notes.ipynb](./Python/notes.ipynb) | Python 基础语法 |
-| [Numpy&Matplotlib&Pandas.ipynb](./Python/Numpy%26Matplotlib%26Pandas.ipynb) | 数据处理与可视化 |
-| [Pytorch.ipynb](./Python/Pytorch.ipynb) | 深度学习框架 PyTorch |
-| [TensorFlow.ipynb](./Python/TensorFlow.ipynb) | 深度学习框架 TensorFlow |
-| [Scikit_learn.ipynb](./Python/Scikit_learn.ipynb) | 机器学习库 Scikit-learn |
-| [FastAPI.ipynb](./Python/FastAPI.ipynb) | Web 框架 FastAPI |
+| [notes.md](./Python/notes.md) | Python 基础语法 |
+| [Numpy&Matplotlib&Pandas.md](./Python/Numpy%26Matplotlib%26Pandas.md) | 数据处理与可视化 |
+| [Pytorch.md](./Python/Pytorch.md) | 深度学习框架 PyTorch |
+| [TensorFlow.md](./Python/TensorFlow.md) | 深度学习框架 TensorFlow |
+| [Scikit_learn.md](./Python/Scikit_learn.md) | 机器学习库 Scikit-learn |
+| [FastAPI.md](./Python/FastAPI.md) | Web 框架 FastAPI |
 
 ---
 
@@ -112,8 +112,9 @@ VLA（视觉语言动作模型）= VLM + Action Head
 
 ## 🛠️ 环境
 
-- 笔记格式：[Jupyter Notebook](https://jupyter.org/) `.ipynb`
-- 推荐使用 [VS Code](https://code.visualstudio.com/) + Jupyter 扩展 或 JupyterLab 打开
+- 主笔记格式：Markdown `.md`
+- 实验与调试格式：[Jupyter Notebook](https://jupyter.org/) `.ipynb`
+- 推荐使用 [VS Code](https://code.visualstudio.com/) 进行 Markdown 维护，并配合 Jupyter 扩展或 JupyterLab 调试 notebook
 
 ---
 
