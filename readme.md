@@ -8,57 +8,56 @@
 
 ### 💻 编程语言
 
-| 分类 | 内容 | 格式 |
-|------|------|------|
-| 🔵 [C](./C/notes.md) | C 语言基础：指针、内存、数据结构 | Markdown / Jupyter Notebook |
-| 🔷 [C++](./Cpp/notes.md) | C++ 语言进阶 | Markdown / Jupyter Notebook |
-| 🐍 [Python](./Python/notes.md) | 语法、NumPy、Matplotlib、Pandas、PyTorch、TensorFlow、FastAPI、Scikit-learn | Markdown / Jupyter Notebook |
+| 分类 | 内容 |
+|------|------|
+| 🔵 [C](./C/notes.md) | C 语言基础：指针、内存、数据结构 |
+| 🔷 [C++](./Cpp/notes.md) | C++ 语言进阶 |
+| 🐍 [Python](./Python/notes.md) | 语法、NumPy、Matplotlib、Pandas、PyTorch、TensorFlow、FastAPI、Scikit-learn |
 
 ### 🛠️ 系统与工具
 
-| 分类 | 内容 | 格式 |
+| 分类 | 内容 |
 |------|------|------|
-| 🐧 [Linux](./Linux/notes.md) | Linux 系统使用与命令 | Markdown / Jupyter Notebook |
-| 🐚 [Shell](./Shell/notes.md) | Shell 脚本与命令行 | Markdown / Jupyter Notebook |
-| 🏗️ [CMake](./CMake/notes.md) | 跨平台构建系统 | Markdown / Jupyter Notebook |
-| 🧪 [Conda](./Conda/notes.md) | Python 环境与包管理 | Markdown / Jupyter Notebook |
-| 🐳 [Docker](./Docker/notes.md) | 容器化与镜像管理 | Markdown / Jupyter Notebook |
-| 🌿 [Git](./Git/notes.md) | 版本控制与协作工作流 | Markdown / Jupyter Notebook |
+| 🐧 [Linux](./Linux/notes.md) | Linux 系统使用与命令 |
+| 🐚 [Shell](./Shell/notes.md) | Shell 脚本与命令行 |
+| 🏗️ [CMake](./CMake/notes.md) | 跨平台构建系统 |
+| 🧪 [Conda](./Conda/notes.md) | Python 环境与包管理 |
+| 🐳 [Docker](./Docker/notes.md) | 容器化与镜像管理 |
+| 🌿 [Git](./Git/notes.md) | 版本控制与协作工作流 |
 
 ### 🤖 AI / 机器学习基础
 
 > ML、DL、RL 是 AI 的三大学习范式，各有侧重。
 
-| 分类 | 内容 | 格式 |
+| 分类 | 内容 |
 |------|------|------|
-| 📊 [ML](./ML/notes.md) | 经典机器学习（SVM、决策树、聚类、降维等） | Markdown / Jupyter Notebook |
-| 🧠 [DL](./DL/notes.md) | 深度学习基础（CNN、RNN、Transformer 等） | Markdown / Jupyter Notebook |
-| 🎮 [RL](./RL/notes.md) | 强化学习（Q-Learning、PPO、SAC 等） | Markdown / Jupyter Notebook |
+| 📊 [ML](./ML/notes.md) | 经典机器学习（SVM、决策树、聚类、降维等） |
+| 🧠 [DL](./DL/notes.md) | 深度学习基础（CNN、RNN、Transformer 等） |
+| 🎮 [RL](./RL/notes.md) | 强化学习（Q-Learning、PPO、SAC 等） |
 
 ### 🌐 大模型 / 多模态
 
 > LLM → VLM → VLA，能力逐步扩展：纯语言 → 视觉语言 → 视觉语言动作。
 
-| 分类 | 内容 | 格式 |
+| 分类 | 内容 |
 |------|------|------|
-| 💬 [LLM](./LLM/notes.md) | 大语言模型（GPT、LLaMA、Qwen 等） | Markdown / Jupyter Notebook |
-| 👁️ [VLM](./VLM/notes.md) | 视觉语言模型（CLIP、LLaVA、InternVL、Qwen-VL 等） | Markdown / Jupyter Notebook |
-| 🦾 [VLA](./VLA/notes.md) | 视觉语言动作模型（RT-2、OpenVLA、π0 等） | Markdown / Jupyter Notebook |
-
+| 💬 [LLM](./LLM/notes.md) | 大语言模型（GPT、LLaMA、Qwen 等） |
+| 👁️ [VLM](./VLM/notes.md) | 视觉语言模型（CLIP、LLaVA、InternVL、Qwen-VL 等） |
+| 🦾 [VLA](./VLA/notes.md) | 视觉语言动作模型（RT-2、OpenVLA、π0 等） |
 ### ⚡ 推理与部署
 
-| 分类 | 内容 | 格式 |
+| 分类 | 内容 |
 |------|------|------|
-| 🔥 [CUDA](./Cuda/notes.md) | NVIDIA CUDA 并行计算 | Markdown / Jupyter Notebook |
-| 📦 [ONNX](./ONNX/notes.md) | 模型交换格式与跨框架推理 | Markdown / Jupyter Notebook |
-| 🚀 [TensorRT](./TensorRT/notes.md) | NVIDIA 高性能推理引擎 | Markdown / Jupyter Notebook |
-| ⚡ [vLLM](./vLLM/notes.md) | 大语言模型高效推理框架（PagedAttention） | Markdown / Jupyter Notebook |
+| 🔥 [CUDA](./Cuda/notes.md) | NVIDIA CUDA 并行计算 |
+| 📦 [ONNX](./ONNX/notes.md) | 模型交换格式与跨框架推理 |
+| 🚀 [TensorRT](./TensorRT/notes.md) | NVIDIA 高性能推理引擎 |
+| ⚡ [vLLM](./vLLM/notes.md) | 大语言模型高效推理框架（PagedAttention） |
 
 ### 🤖 机器人
 
-| 分类 | 内容 | 格式 |
-|------|------|------|
-| 🤖 [ROS2](./ROS2/notes.md) | 机器人操作系统 ROS 2 | Markdown / Jupyter Notebook |
+| 分类 | 内容 |
+|------|------|
+| 🤖 [ROS2](./ROS2/notes.md) | 机器人操作系统 ROS 2 |
 
 ---
 
