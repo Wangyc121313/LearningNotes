@@ -81,6 +81,242 @@ ORT 自动执行：
 | **QAT（量化感知训练）** | 训练中模拟量化误差，精度更高 |
 | **动态量化** | 推理时动态量化激活，适合 NLP |
 
+---
+
+## 5. ONNX 在部署链路中的位置
+
+ONNX 最重要的价值不是“推理框架”，而是**模型中间表示**。真实部署时常见链路如下：
+
+```text
+训练框架
+PyTorch / TensorFlow / Paddle
+        |
+        | 导出
+        v
+ONNX 模型
+        |
+        | 检查、简化、shape inference、精度对齐
+        v
+推理后端
+ONNX Runtime / TensorRT / OpenVINO / RKNN / NCNN
+        |
+        v
+业务部署
+服务端 GPU / 边缘 NPU / CPU / 移动端
+```
+
+面试回答可以抓住三句话：
+
+1. ONNX 是跨框架的 IR，描述的是计算图、权重、输入输出和算子版本。
+2. ONNX 本身不保证高性能，性能取决于后端执行器和硬件。
+3. 导出后必须做结构检查、数值对齐和目标后端兼容性验证。
+
+## 6. ONNX 文件里到底有什么
+
+| 组件 | 作用 | 常见排查点 |
+|---|---|---|
+| `ModelProto` | 整个模型，包含 IR version、opset、graph、metadata | opset 是否被目标后端支持 |
+| `GraphProto` | 计算图，包含 node、input、output、initializer | 输入输出名、拓扑结构是否正确 |
+| `NodeProto` | 单个算子节点，例如 Conv、Relu、MatMul | 算子属性、domain、是否有自定义算子 |
+| `TensorProto` | 权重或常量张量 | 大模型是否 external data |
+| `ValueInfoProto` | tensor 的类型和 shape 信息 | 动态维度、缺失 shape |
+| `opset_import` | 算子集版本 | 版本太新/太旧都会导致后端不支持 |
+
+### IR version 和 opset 的区别
+
+| 概念 | 含义 |
+|---|---|
+| IR version | ONNX 文件结构本身的版本，类似“容器格式版本” |
+| opset version | 算子语义版本，决定 Conv、Resize、TopK 等算子的定义 |
+
+工程中更常遇到的是 **opset 兼容性问题**。例如某个后端只支持到 opset 17，而模型导出成 opset 19，就可能出现解析失败或算子行为不一致。
+
+## 7. 导出 ONNX 的工程要点
+
+### 7.1 导出前先固定模型状态
+
+```python
+model.eval()
+with torch.no_grad():
+    torch.onnx.export(...)
+```
+
+原因：
+
+- `eval()` 会固定 BatchNorm、Dropout 等训练/推理行为。
+- `no_grad()` 避免无意义的梯度图和额外开销。
+- dummy input 的 shape、dtype、device 应尽量贴近部署输入。
+
+### 7.2 动态 shape 不要滥用
+
+动态 batch 很常见，但动态 H/W 要谨慎：
+
+```python
+dynamic_axes = {
+    "images": {0: "batch"},
+    "logits": {0: "batch"},
+}
+```
+
+| 选择 | 优点 | 缺点 |
+|---|---|---|
+| 固定 shape | 后端优化最充分，TensorRT/RKNN 更容易编译 | 灵活性差 |
+| 动态 batch | 兼顾吞吐和灵活性 | 需要 profile 或额外调优 |
+| 动态 H/W | 输入尺寸灵活 | shape inference、算子支持、engine 优化更复杂 |
+
+部署时优先用**固定 H/W + 动态 batch**。如果业务必须动态分辨率，建议先确认目标后端是否支持，并准备典型尺寸做 profile。
+
+### 7.3 导出后必须做三类检查
+
+```python
+import onnx
+from onnx import checker, shape_inference
+
+model = onnx.load("model.onnx")
+checker.check_model(model)
+model = shape_inference.infer_shapes(model)
+onnx.save(model, "model_infer_shape.onnx")
+```
+
+| 检查 | 工具 | 目的 |
+|---|---|---|
+| 结构合法性 | `onnx.checker.check_model` | 检查 protobuf、opset、图结构是否合法 |
+| shape 推断 | `onnx.shape_inference.infer_shapes` | 补充中间 tensor shape，方便排查和量化 |
+| 可视化 | Netron | 看输入输出名、数据布局、异常节点 |
+| 数值对齐 | ONNX Runtime vs 原框架 | 确认导出没有改变模型语义 |
+
+注意：ONNX shape inference 不是万能的。遇到动态 `Reshape`、复杂控制流、自定义算子时，中间 shape 可能无法完全推断。
+
+## 8. 常见导出问题
+
+| 问题 | 现象 | 处理 |
+|---|---|---|
+| Python 控制流被 trace 固化 | 输入变化后分支不对 | 使用 `torch.jit.script` 或新版 `torch.export` / dynamo 导出 |
+| 自定义 op | ORT/TensorRT/RKNN 解析失败 | 改写为标准算子，或写 custom op/plugin |
+| `Resize` 行为不一致 | 检测/分割结果偏移 | 检查 opset、`align_corners`、`coordinate_transformation_mode` |
+| 动态 shape 太多 | TensorRT profile 难配，RKNN 转换失败 | 固定 H/W，只保留动态 batch |
+| 输入 layout 混乱 | 输出精度明显不对 | 明确 NCHW/NHWC、RGB/BGR、归一化 |
+| 大模型超过 2GB | 保存或 checker 失败 | 使用 ONNX external data |
+
+## 9. ONNX Runtime 重点
+
+### 9.1 Execution Provider
+
+ONNX Runtime 会把图分配给不同 Execution Provider。常见策略：
+
+```python
+providers = [
+    "TensorrtExecutionProvider",
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider",
+]
+session = ort.InferenceSession("model.onnx", providers=providers)
+```
+
+顺序很重要：越靠前优先级越高。如果某些节点后端不支持，可能 fallback 到后面的 provider。排查性能时要确认模型是否真的跑在目标后端上。
+
+### 9.2 图优化等级
+
+ONNX Runtime 图优化分为 Basic、Extended、Layout 等层级，默认通常会开启优化。工程中常见用法：
+
+```python
+sess_options = ort.SessionOptions()
+sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+sess_options.optimized_model_filepath = "optimized.onnx"
+session = ort.InferenceSession("model.onnx", sess_options)
+```
+
+| 优化 | 例子 | 说明 |
+|---|---|---|
+| Basic | 常量折叠、Identity 删除、Conv+BN 融合 | 通常安全 |
+| Extended | Attention/GELU/LayerNorm 融合 | 与 EP 有关 |
+| Layout | NCHWc 等布局优化 | 可能和硬件相关 |
+
+离线保存 optimized model 可以减少服务启动时优化开销，但要注意：离线优化模型通常和 provider、硬件、ORT 版本相关，不要随意跨环境复用。
+
+### 9.3 I/O Binding
+
+GPU 推理慢不一定是算子慢，可能是 H2D/D2H 拷贝慢。默认 `session.run()` 常把输入从 CPU 拷到 GPU，再把输出从 GPU 拷回 CPU。高性能部署可使用 I/O Binding，把输入输出绑定到设备内存，减少不必要拷贝。
+
+适用场景：
+
+- 前后处理也在 GPU 上完成。
+- 模型输出会继续给下一个 GPU 模型。
+- batch 大、输出大，数据拷贝占比明显。
+
+## 10. ONNX 量化补充
+
+ONNX Runtime 的 INT8 量化主要有两种表示：
+
+| 格式 | 特点 | 常见场景 |
+|---|---|---|
+| QOperator | 用 `QLinearConv`、`MatMulInteger` 等量化算子替换原算子 | 传统 ORT INT8 |
+| QDQ | 在原图中插入 `QuantizeLinear/DeQuantizeLinear` | QAT、TensorRT 显式量化更常见 |
+
+动态量化和静态量化的区别：
+
+| 方法 | 激活 scale/zero_point | 适合模型 |
+|---|---|---|
+| 动态量化 | 推理时动态计算 | Transformer、RNN、Linear 多的模型 |
+| 静态量化 | 校准集提前统计并写入模型 | CNN、视觉模型、边缘部署 |
+
+静态量化基本流程：
+
+```text
+FP32 ONNX
+  -> shape inference / preprocess
+  -> calibration data reader
+  -> quantize_static
+  -> 精度对齐
+  -> 部署
+```
+
+精度下降排查顺序：
+
+1. 先确认 FP32 ONNX 和原框架输出一致。
+2. 再比较 INT8 ONNX 和 FP32 ONNX 输出。
+3. 检查校准集是否代表真实数据分布。
+4. 尝试 per-channel、不同 calibration method、排除敏感节点。
+5. 若 PTQ 不满足，再考虑 QAT。
+
+## 11. 部署排查 Checklist
+
+| 阶段 | 必查项 |
+|---|---|
+| 导出前 | `model.eval()`、dummy input shape、dtype、前处理 |
+| 导出时 | opset、input/output name、dynamic axes |
+| 导出后 | `onnx.checker`、shape inference、Netron |
+| 数值对齐 | 原框架 vs FP32 ONNX，误差阈值 |
+| 后端转换 | TensorRT/RKNN/OpenVINO 是否支持所有 op |
+| 性能测试 | 是否包含前后处理、H2D/D2H、warmup、batch |
+| 生产部署 | engine/model 是否绑定硬件、版本、driver、CUDA |
+
+## 12. 面试速记
+
+**Q：ONNX 是什么？**
+
+ONNX 是一种开放模型中间表示，用 protobuf 描述计算图、权重、输入输出和算子版本。它解决的是训练框架和推理后端之间的模型交换问题。
+
+**Q：ONNX 导出后为什么还要校验？**
+
+因为导出可能固化控制流、改变算子语义、丢失动态 shape 信息，目标后端也可能不支持某些 opset 或自定义算子。必须用 checker、shape inference、Netron 和数值对齐确认模型可用。
+
+**Q：opset 太高是不是一定好？**
+
+不一定。新 opset 表达能力更强，但目标后端可能不支持。部署时应选“训练框架能稳定导出、目标后端明确支持”的 opset。
+
+**Q：ONNX Runtime 比 PyTorch 快在哪里？**
+
+ORT 会做图优化、算子融合、provider 分配，并使用 CPU/CUDA/TensorRT/OpenVINO 等后端执行。速度提升来自图级优化和更适合推理的 runtime，而不是 ONNX 文件本身。
+
+参考资料：
+
+- ONNX Shape Inference：<https://onnx.ai/onnx/repo-docs/ShapeInference.html>
+- ONNX External Data：<https://onnx.ai/onnx/repo-docs/ExternalData.html>
+- ONNX Runtime Graph Optimizations：<https://onnxruntime.ai/docs/performance/model-optimizations/graph-optimizations.html>
+- ONNX Runtime Quantization：<https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html>
+- ONNX Runtime I/O Binding：<https://onnxruntime.ai/docs/performance/tune-performance/iobinding.html>
+
 ```python
 import torch
 import torch.nn as nn
