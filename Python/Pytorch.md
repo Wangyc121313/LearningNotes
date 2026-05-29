@@ -1001,7 +1001,169 @@ ONNX 导出常见坑：
 | RKNN 不支持 | 含复杂 attention/自定义算子 | 替换为 RKNN 白名单算子 |
 | 精度差 | FP16/BF16 量化 | 保持 FP32 导出后再做量化 |
 
-### 7.YOLOv8n 微调训练实战（Ultralytics）
+### 7.验证集的作用
+
+验证集用于评估模型在未见过数据上的性能，监控过拟合，并指导超参数调整。训练过程中通过定期在验证集上评测指标（如准确率、损失）来判断模型是否在泛化能力上有所提升。
+
+训练时模型只见过 train 集的图片，会过拟合训练数据。val 集是模型从未训练过的图片，用来衡量模型对新数据的泛化能力。
+
+Ultralytics 训练过程中会在每个 epoch 结束后自动在 val 集上评估，best.pt 保存的就是val mAP@0.5 最高的那个 epoch 的权重，而不是训练 loss 最低的。
+
+```bash
+yolo detect val model=yolov8n.pt       data=coco_subset.yaml  # 基线
+yolo detect val model=best.pt          data=coco_subset.yaml  # 微调后
+yolo detect val model=best.onnx        data=coco_subset.yaml  # ONNX 转换后
+```
+
+### 8.目标检测评估指标：mAP
+
+#### (1) 基础概念：IoU / TP / FP / FN
+
+**IoU（Intersection over Union）**= 预测框与真值框的交集面积 / 并集面积
+
+```text
+          ┌──────────────┐
+          │   GT box     │
+          │    ┌─────────┼──────┐
+          │    │  交集   │      │
+          └────┼─────────┘  预测框
+               └────────────────┘
+
+IoU = 交集面积 / (GT面积 + 预测框面积 - 交集面积)
+```
+
+给定 IoU 阈值（如 0.5），对每个预测框判断：
+
+| 情况 | 含义 |
+|---|---|
+| TP（True Positive） | IoU ≥ 阈值，且类别正确 |
+| FP（False Positive） | IoU < 阈值，或类别错误（误检） |
+| FN（False Negative） | 真值框没有对应预测框（漏检） |
+
+$$\text{Precision} = \frac{TP}{TP + FP} \qquad \text{Recall} = \frac{TP}{TP + FN}$$
+
+```python
+def compute_iou(box1, box2):
+    """box 格式: [x1, y1, x2, y2]"""
+    inter_x1 = max(box1[0], box2[0])
+    inter_y1 = max(box1[1], box2[1])
+    inter_x2 = min(box1[2], box2[2])
+    inter_y2 = min(box1[3], box2[3])
+
+    inter_area = max(0, inter_x2 - inter_x1) * max(0, inter_y2 - inter_y1)
+    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
+
+    return inter_area / (area1 + area2 - inter_area + 1e-8)
+
+pred = [50, 50, 150, 150]
+gt   = [60, 60, 160, 160]
+print(f"IoU = {compute_iou(pred, gt):.4f}")  # ≈ 0.68
+```
+
+#### (2) P-R 曲线与 AP
+
+将同一类别的所有预测框按**置信度从高到低排序**，逐步增大召回范围，记录每一步的 Precision 和 Recall，绘制 P-R 曲线。
+
+**AP（Average Precision）= P-R 曲线下面积**
+
+```python
+import numpy as np
+
+def compute_ap(recalls, precisions):
+    """
+    全点插值法（COCO 标准）。
+    recalls, precisions 须按 recall 升序排列。
+    """
+    mrec = np.concatenate(([0.0], recalls, [1.0]))
+    mpre = np.concatenate(([1.0], precisions, [0.0]))
+
+    # 从右向左取最大，消除锯齿使曲线单调不增
+    for i in range(len(mpre) - 2, -1, -1):
+        mpre[i] = max(mpre[i], mpre[i + 1])
+
+    # 矩形积分求面积
+    idx = np.where(mrec[1:] != mrec[:-1])[0]
+    ap = np.sum((mrec[idx + 1] - mrec[idx]) * mpre[idx + 1])
+    return float(ap)
+
+recalls    = np.array([0.1, 0.2, 0.4, 0.5, 0.7, 0.8, 1.0])
+precisions = np.array([1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4])
+print(f"AP = {compute_ap(recalls, precisions):.4f}")
+```
+
+#### (3) mAP：多类别均值
+
+$$\text{mAP} = \frac{1}{N_{\text{class}}} \sum_{c=1}^{N_{\text{class}}} AP_c$$
+
+对每个类别单独计算 AP，再取所有类别的均值。
+
+#### (4) mAP@0.5 vs mAP@0.5:0.95
+
+| 指标 | IoU 阈值 | 标准 | 说明 |
+|---|---|---|---|
+| `mAP@0.5` | 0.5（单点） | PASCAL VOC | 宽松，常用于快速对比 |
+| `mAP@0.5:0.95` | 0.5, 0.55, …, 0.95（10点均值） | COCO | 严格，更能反映定位精度 |
+| `mAP@0.75` | 0.75（单点） | COCO 子项 | 强调精准定位 |
+
+```text
+YOLOv8n 在 COCO val2017 上的典型结果：
+  mAP@0.5       ≈ 0.526
+  mAP@0.5:0.95  ≈ 0.372
+
+差距大 → 模型能检测到目标，但定位精度仍有提升空间。
+```
+
+#### (5) 用 Ultralytics 读取 mAP
+
+mAP计算完整过程：
+```text
+输入：val 集图片 + 对应 GT 标注（person/car/bicycle 的框坐标和类别）
+
+第一步：推理
+  对每张 val 图跑模型 → 得到 N 个预测框，每个带 [x1,y1,x2,y2, conf, class]
+
+第二步：对每个类别（如 person）单独计算 AP
+  1. 收集该类别所有预测框，按 conf 从高到低排序
+  2. 逐个判断每个预测框：
+       IoU(pred, GT) ≥ 0.5 且未被匹配过 → TP
+       否则 → FP
+  3. 按顺序累积计算 Precision 和 Recall，得到一组 (R, P) 点
+  4. 绘制 P-R 曲线，计算曲线下面积 = AP_person
+
+第三步：mAP = 所有类别 AP 的均值
+  mAP@0.5 = (AP_person + AP_car + AP_bicycle) / 3
+```
+
+具体实现：
+
+```python
+from ultralytics import YOLO
+
+model = YOLO("runs/train/yolov8n_subset/weights/best.pt")
+metrics = model.val(data="coco_subset.yaml", device=0)
+
+print(f"mAP@0.5       = {metrics.box.map50:.4f}")
+print(f"mAP@0.5:0.95  = {metrics.box.map:.4f}")
+print(f"Precision     = {metrics.box.mp:.4f}")
+print(f"Recall        = {metrics.box.mr:.4f}")
+
+# 按类别查看 AP
+for i, name in enumerate(model.names.values()):
+    print(f"  [{name:10s}] AP@0.5 = {metrics.box.ap50[i]:.4f}")
+```
+
+#### (6) 常见误解与坑点
+
+| 误解 | 实际情况 |
+|---|---|
+| mAP 越高在实际场景越好 | mAP 依赖测试集分布，需在自己的场景数据上验证 |
+| mAP@0.5=0.9 接近完美 | IoU=0.5 很宽松，框可能偏移很多像素 |
+| 80类→3类微调后 mAP 应该更高 | 需在子集 val 上评估；若用全 COCO val，77个类的 GT 会产生大量 FN |
+| 量化后 mAP 损失可忽略 | YOLOv8n 等轻量模型 INT8 量化后通常损失 1-3%，必须实测 |
+| Precision 高代表模型好 | Precision 和 Recall 有 trade-off，调置信度阈值会相互影响 |
+
+### 9.YOLOv8n 微调训练实战（Ultralytics）
 
 > 目标：在 COCO person/car/bicycle 子集上微调 YOLOv8n，走通完整训练→ONNX 导出链路。
 
@@ -1136,132 +1298,3 @@ yolo detect val model=runs/train/yolov8n_subset/weights/best.pt data=coco_subset
 | 微调前（预训练） | yolov8n.pt | 记录基线 |
 | 微调后 | best.pt | 应有提升 |
 | ONNX 推理 | best.onnx | 与 best.pt 误差 < 0.1% |
-
----
-
-### 8.目标检测评估指标：mAP
-
-#### (1) 基础概念：IoU / TP / FP / FN
-
-**IoU（Intersection over Union）**= 预测框与真值框的交集面积 / 并集面积
-
-```text
-          ┌──────────────┐
-          │   GT box     │
-          │    ┌─────────┼──────┐
-          │    │  交集   │      │
-          └────┼─────────┘  预测框
-               └─────────────────┘
-
-IoU = 交集面积 / (GT面积 + 预测框面积 - 交集面积)
-```
-
-给定 IoU 阈值（如 0.5），对每个预测框判断：
-
-| 情况 | 含义 |
-|---|---|
-| TP（True Positive） | IoU ≥ 阈值，且类别正确 |
-| FP（False Positive） | IoU < 阈值，或类别错误（误检） |
-| FN（False Negative） | 真值框没有对应预测框（漏检） |
-
-$$\text{Precision} = \frac{TP}{TP + FP} \qquad \text{Recall} = \frac{TP}{TP + FN}$$
-
-```python
-def compute_iou(box1, box2):
-    """box 格式: [x1, y1, x2, y2]"""
-    inter_x1 = max(box1[0], box2[0])
-    inter_y1 = max(box1[1], box2[1])
-    inter_x2 = min(box1[2], box2[2])
-    inter_y2 = min(box1[3], box2[3])
-
-    inter_area = max(0, inter_x2 - inter_x1) * max(0, inter_y2 - inter_y1)
-    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
-    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
-
-    return inter_area / (area1 + area2 - inter_area + 1e-8)
-
-pred = [50, 50, 150, 150]
-gt   = [60, 60, 160, 160]
-print(f"IoU = {compute_iou(pred, gt):.4f}")  # ≈ 0.68
-```
-
-#### (2) P-R 曲线与 AP
-
-将同一类别的所有预测框按**置信度从高到低排序**，逐步增大召回范围，记录每一步的 Precision 和 Recall，绘制 P-R 曲线。
-
-**AP（Average Precision）= P-R 曲线下面积**
-
-```python
-import numpy as np
-
-def compute_ap(recalls, precisions):
-    """
-    全点插值法（COCO 标准）。
-    recalls, precisions 须按 recall 升序排列。
-    """
-    mrec = np.concatenate(([0.0], recalls, [1.0]))
-    mpre = np.concatenate(([1.0], precisions, [0.0]))
-
-    # 从右向左取最大，消除锯齿使曲线单调不增
-    for i in range(len(mpre) - 2, -1, -1):
-        mpre[i] = max(mpre[i], mpre[i + 1])
-
-    # 矩形积分求面积
-    idx = np.where(mrec[1:] != mrec[:-1])[0]
-    ap = np.sum((mrec[idx + 1] - mrec[idx]) * mpre[idx + 1])
-    return float(ap)
-
-recalls    = np.array([0.1, 0.2, 0.4, 0.5, 0.7, 0.8, 1.0])
-precisions = np.array([1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4])
-print(f"AP = {compute_ap(recalls, precisions):.4f}")
-```
-
-#### (3) mAP：多类别均值
-
-$$\text{mAP} = \frac{1}{N_{\text{class}}} \sum_{c=1}^{N_{\text{class}}} AP_c$$
-
-对每个类别单独计算 AP，再取所有类别的均值。
-
-#### (4) mAP@0.5 vs mAP@0.5:0.95
-
-| 指标 | IoU 阈值 | 标准 | 说明 |
-|---|---|---|---|
-| `mAP@0.5` | 0.5（单点） | PASCAL VOC | 宽松，常用于快速对比 |
-| `mAP@0.5:0.95` | 0.5, 0.55, …, 0.95（10点均值） | COCO | 严格，更能反映定位精度 |
-| `mAP@0.75` | 0.75（单点） | COCO 子项 | 强调精准定位 |
-
-```text
-YOLOv8n 在 COCO val2017 上的典型结果：
-  mAP@0.5       ≈ 0.526
-  mAP@0.5:0.95  ≈ 0.372
-
-差距大 → 模型能检测到目标，但定位精度仍有提升空间。
-```
-
-#### (5) 用 Ultralytics 读取 mAP
-
-```python
-from ultralytics import YOLO
-
-model = YOLO("runs/train/yolov8n_subset/weights/best.pt")
-metrics = model.val(data="coco_subset.yaml", device=0)
-
-print(f"mAP@0.5       = {metrics.box.map50:.4f}")
-print(f"mAP@0.5:0.95  = {metrics.box.map:.4f}")
-print(f"Precision     = {metrics.box.mp:.4f}")
-print(f"Recall        = {metrics.box.mr:.4f}")
-
-# 按类别查看 AP
-for i, name in enumerate(model.names.values()):
-    print(f"  [{name:10s}] AP@0.5 = {metrics.box.ap50[i]:.4f}")
-```
-
-#### (6) 常见误解与坑点
-
-| 误解 | 实际情况 |
-|---|---|
-| mAP 越高在实际场景越好 | mAP 依赖测试集分布，需在自己的场景数据上验证 |
-| mAP@0.5=0.9 接近完美 | IoU=0.5 很宽松，框可能偏移很多像素 |
-| 80类→3类微调后 mAP 应该更高 | 需在子集 val 上评估；若用全 COCO val，77个类的 GT 会产生大量 FN |
-| 量化后 mAP 损失可忽略 | YOLOv8n 等轻量模型 INT8 量化后通常损失 1-3%，必须实测 |
-| Precision 高代表模型好 | Precision 和 Recall 有 trade-off，调置信度阈值会相互影响 |

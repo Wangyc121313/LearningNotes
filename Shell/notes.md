@@ -419,7 +419,20 @@ trap cleanup INT TERM EXIT  # Ctrl+C / SIGTERM / 脚本退出时触发
 timeout 30 ./long_running.sh || echo "超时了！"
 ```
 
-## 8. 实用脚本示例
+## 8. 远程开发
+
+### scp（安全复制）
+
+```bash
+# 从本地复制到远程
+scp localfile.txt user@remote:/path/to/destination/
+# 从远程复制到本地
+scp user@remote:/path/to/source.txt ./
+# 复制目录（加 -r）
+scp -r localdir/ user@remote:/path/to/destination/
+```
+
+## 9. 实用脚本示例
 
 ### 批量重命名文件
 

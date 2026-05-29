@@ -1029,14 +1029,10 @@ split_bucketed = bucketed.train_test_split(
     seed=42,
     stratify_by_column="len_bucket",
 )
+```
+labels具体是指什么？train set 和 test set
 
-labels具体是指什么？
-
-train set 和 test set
-
-对dateset进行结构上的处理：
-
-strip()、map() 
+对dateset进行结构上的处理：strip()、map() 
 
 label的作用，对于某个样本任何tokn都可以作为input，将其后续的部分作为output训练
 
@@ -1298,13 +1294,12 @@ Decoder layer一次推理的总开销：$24bsh^2+4bs^2h$，为$s$的平方级别
 
 without KV Cache:
 <video src="resources/Without KV Cache.mp4" controls="controls" width="100%" height="auto">
-  您的浏览器不支持 video 标签。
 </video>
 
 with KV Cache:
 
 <video src="resources/KV Cache.mp4" controls="controls" width="100%" height="auto">
-  您的浏览器不支持 video 标签。
+
 </video>
 
 所以，真正自回归计算的部分是$(b,s+1,h)$中的第二个维度$index_{s+1}$的部分，复用的是用于计算$(b,s+1,h)$中第二维度$index_{s+1}$的数值，从shape的视角: $(b,s+1,h)\rightarrow (b,1,h)$
@@ -1431,7 +1426,7 @@ if current_token_index % block_size == 0:
 # 将KV写入对应的物理地址
 physical_address = map_to_address(new_physical_id)
 write_kv(physical_address, k, v)
-
+```
 ## Linear Attention
 
 标准 Self-Attention 的核心瓶颈在于其 $O(N^2)$ 的时间和空间复杂度。**Linear Attention (线性注意力)** 旨在通过改变计算顺序或近似 Kernel 函数，将复杂度降低到 $O(N)$。
@@ -1644,16 +1639,16 @@ for doc in docs:
 	print(f"score: {doc.score}")
 ```
 输出
-```
-content: There are over 7,000 languages spoken around the world today.
-score: 7.815769833242408
-content: In certain parts of the world, like the Maldives, Puerto Rico, and San Diego, 
-you can witness the phenomenon of bioluminescent waves.
-score: 4.314753296196667
-content: Elephants have been observed to behave in a way that indicates a high level 
-of self-awareness, such as recognizing themselves in mirrors.
-score: 3.652595952218814
-```
+
+> content: There are over 7,000 languages spoken around the world today.
+> score: 7.815769833242408
+> 
+> content: In certain parts of the world, like the Maldives, Puerto Rico, and San Diego, you can witness the phenomenon of bioluminescent waves.
+> score: 4.314753296196667
+> 
+> content: Elephants have been observed to behave in a way that indicates a high level of self-awareness, such as recognizing themselves in mirrors.
+> score: 3.652595952218814
+
 
 优缺点：
 
@@ -1674,6 +1669,10 @@ score: 3.652595952218814
   $$\text{Cosine Similarity} = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|} = \frac{\sum_{i=1}^n A_i B_i}{\sqrt{\sum_{i=1}^n A_i^2} \cdot \sqrt{\sum_{i=1}^n B_i^2}}$$
 **欧式似度**：直接计算两个向量之间的欧几里得距离，然后取个倒数得到相似度分数。也可以用其他距离：曼哈顿距离、汉明距离等
 	$$\text{Euclidean Similarity} = \frac{1}{1+\sqrt{\sum_{i=1}^n (A_i - B_i)^2}}$$
+
+例子：
+
+使用sentence-transformers库中的预训练模型sentence-transformers/all-MiniLM-L6-v2来生成句向量，并使用余弦相似度计算查询与文档之间的相似度分数。
 
 ```python
 from haystack import Document, Pipeline
@@ -1705,21 +1704,20 @@ for doc in documents_with_embeddings:
     print(f"embedding: {doc.embedding}\n")
 ```
 输出：
-```
-content: There are over 7,000 languages spoken around the world today.
-score: None
-embedding: [0.03276507928967476, ..., 0.022160163149237633]
 
-content: Elephants have been observed to behave in a way that indicates 
-a high level of self-awareness, such as recognizing themselves in mirrors.
-score: None
-embedding: [0.01985647901892662, ..., 0.007489172276109457]
+> content: There are over 7,000 languages spoken around the world today.
+> score: None
+> embedding: [0.03276507928967476, ..., 0.022160163149237633]
+> 
+> content: Elephants have been observed to behave in a way that indicates a high level of self-awareness, such as recognizing themselves in mirrors.
+> score: None
+> embedding: [0.01985647901892662, ..., 0.007489172276109457]
+> 
+> content: In certain parts of the world, like the Maldives, Puerto Rico, and San Diego, you can witness the phenomenon of bioluminescent waves.
+> score: None
+> embedding: [0.08535218983888626, ..., 0.013049677945673466]
 
-content: In certain parts of the world, like the Maldives, Puerto Rico, 
-and San Diego, you can witness the phenomenon of bioluminescent waves.
-score: None
-embedding: [0.08535218983888626, ..., 0.013049677945673466]
-```
+处理查询：
 
 ```python
 query_pipeline = Pipeline()
@@ -1740,20 +1738,16 @@ for doc in result_documents:
     print(f"score: {doc.score}\n")
 ```
 输出：
-```
-content: There are over 7,000 languages spoken around the world today.
-score: 0.7557791921810213
+> content: There are over 7,000 languages spoken around the world today.
+> score: 0.7557791921810213
+>
+> content: Elephants have been observed to behave in a way that indicates a high level of self-awareness, such as recognizing themselves in mirrors.
+> score: 0.04221229572888512
+>
+> content: In certain parts of the world, like the Maldives, Puerto Rico, and San Diego, you can witness the phenomenon of bioluminescent waves.
+> score: -0.001667837080811814
 
-content: Elephants have been observed to behave in a way that indicates 
-a high level of self-awareness, such as recognizing themselves in mirrors.
-score: 0.04221229572888512
-
-content: In certain parts of the world, like the Maldives, Puerto Rico,
- and San Diego, you can witness the phenomenon of bioluminescent waves.
-score: -0.001667837080811814
-```
-
-优缺点
+优缺点：
 - **速度快**：可以提前在GPU上计算并存储文档块的dense embedding，计算相似度就会很快
 - **存储开销小**：每个文档块只需要额外存储一个高维向量(通常768或1024维)
 - **捕获句子的语义信息**：只要是相似的句子，关键字不匹配也可以检索到
@@ -1782,18 +1776,15 @@ for doc in ranked_documents:
     print(f"score: {doc.score}\n")
 ```
 输出：
-```
-content: There are over 7,000 languages spoken around the world today.
-score: 0.9998884201049805
 
-content: Elephants have been observed to behave in a way that indicates 
-a high level of self-awareness, such as recognizing themselves in mirrors.
-score: 1.4616251974075567e-05
+> content: There are over 7,000 languages spoken around the world today.
+> score: 0.9998884201049805
+  
+> content: Elephants have been observed to behave in a way that indicates a high level of self-awareness, such as recognizing themselves in mirrors.
+> score: 1.4616251974075567e-05
 
-content: In certain parts of the world, like the Maldives, Puerto Rico, 
-and San Diego, you can witness the phenomenon of bioluminescent waves.
-score: 1.4220857337932102e-05
-```
+> content: In certain parts of the world, like the Maldives, Puerto Rico, and San Diego, you can witness the phenomenon of bioluminescent waves.
+> score: 1.4220857337932102e-05
 
 优缺点：
 

@@ -96,6 +96,13 @@ git log
 git commit -a -m "commit message"   # or -am
 ```
 
+追加提交：
+```bash
+# 已有新changes
+git add .
+git commit --amend
+```
+
 #### 5.回退版本
 
 三种模式区别在于是否保留工作区、暂存区的修改内容。
