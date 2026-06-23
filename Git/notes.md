@@ -173,6 +173,13 @@ git branch -d new_branch    #删除一个已经完成合并的分支
 git branch -D other_branch  #强制删除一个未完成合并的分支
 ```
 
+重命名分支：
+```bash
+# 切换到对应分支
+git switch old_branch
+git branch -m new_branch
+```
+
 两个分支修改了同一文件的同一行代码，则会出现合并冲突。
 
 出现冲突后如何解决：
